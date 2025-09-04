@@ -28,26 +28,26 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
 
   if (isMinimized) {
     return (
-      <div className={`bg-blue-500 hover:bg-blue-600 rounded-full p-3 shadow-lg cursor-pointer transition-all duration-200 ${className}`}>
+      <div className={`bg-blue-500 hover:bg-blue-600 rounded-full p-3 sm:p-4 shadow-lg cursor-pointer transition-all duration-200 mx-auto w-fit ${className}`}>
         <button
           onClick={() => setIsMinimized(false)}
-          className="text-white"
+          className="text-white flex items-center justify-center"
         >
-          <span className="text-lg">🤖</span>
+          <span className="text-lg sm:text-xl">🤖</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden w-full max-w-sm mx-auto ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-white text-lg">🤖</span>
             <div>
-              <h3 className="text-white font-semibold">GAIA</h3>
+              <h3 className="text-white font-semibold text-sm sm:text-base">GAIA</h3>
               <p className="text-blue-100 text-xs">Agente Conversacional Realtime</p>
             </div>
           </div>
@@ -108,12 +108,12 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
       )}
 
       {/* Main Controls */}
-      <div className="p-4">
+      <div className="p-4 sm:p-6">
         {/* Connect/Disconnect Button */}
         <button
           onClick={isConnected ? disconnect : connect}
           disabled={isConnecting}
-          className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+          className={`w-full flex items-center justify-center gap-3 px-4 py-3 sm:py-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
             isConnected
               ? 'bg-red-500 hover:bg-red-600 text-white'
               : 'bg-blue-500 hover:bg-blue-600 text-white'
@@ -138,15 +138,15 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
         {!isConnected && !isConnecting && (
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="text-blue-800 font-medium text-sm mb-2">Cómo usar GAIA:</h4>
-            <ol className="text-blue-700 text-xs space-y-1 list-decimal list-inside">
+            <ol className="text-blue-700 text-xs sm:text-sm space-y-1 list-decimal list-inside">
               <li>Haz clic en &quot;Conectar GAIA&quot;</li>
               <li>Permite el acceso al micrófono</li>
               <li>¡Comienza a hablar! GAIA responderá automáticamente</li>
             </ol>
             
             <div className="mt-3 pt-3 border-t border-blue-200">
-              <p className="text-blue-600 text-xs font-medium mb-1">Pregúntale sobre:</p>
-              <ul className="text-blue-600 text-xs space-y-1">
+              <p className="text-blue-600 text-xs sm:text-sm font-medium mb-1">Pregúntale sobre:</p>
+              <ul className="text-blue-600 text-xs sm:text-sm space-y-1">
                 <li>• GUAICARAMO S.A.S</li>
                 <li>• SIRIUS Regenerative Solutions</li>
                 <li>• Del Llano Alto Oleico</li>
@@ -159,8 +159,8 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
 
       {/* Activity Log */}
       {logs.length > 0 && (
-        <div className="border-t border-gray-200 p-3 bg-gray-50">
-          <h4 className="text-gray-700 font-medium text-xs mb-2">Registro de actividad:</h4>
+        <div className="border-t border-gray-200 p-3 sm:p-4 bg-gray-50">
+          <h4 className="text-gray-700 font-medium text-xs sm:text-sm mb-2">Registro de actividad:</h4>
           <div className="space-y-1 max-h-20 overflow-y-auto">
             {logs.slice(-3).map((log, index) => (
               <p key={index} className="text-xs text-gray-600 font-mono">
@@ -172,8 +172,8 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
       )}
 
       {/* Footer */}
-      <div className="bg-gray-50 px-4 py-2 border-t border-gray-200">
-        <p className="text-xs text-gray-500 text-center">
+      <div className="bg-gray-50 px-4 py-2 sm:py-3 border-t border-gray-200">
+        <p className="text-xs sm:text-sm text-gray-500 text-center">
           GAIA - Especialista en Sector Palmicultor Colombiano
         </p>
       </div>

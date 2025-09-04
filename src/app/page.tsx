@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import PartnerCarousel from '../components/PartnerCarousel';
-import GaiaRealtime from '../components/GaiaRealtime';
+import GaiaMinimal from '../components/GaiaMinimal';
 
 // Importar dinámicamente el componente para evitar problemas de SSR con Three.js
 const ThreeAnimation = dynamic(() => import('../components/ThreeAnimationFixed'), {
@@ -20,9 +20,13 @@ export default function Home() {
       <ThreeAnimation />
       <PartnerCarousel />
       
-      {/* GAIA Realtime Agent - Simple Implementation */}
-      <div className="absolute top-4 right-4 w-80 z-50">
-        <GaiaRealtime />
+      {/* GAIA Minimal - Centrado debajo de la esfera */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+        {/* Espaciado para posicionar debajo de la esfera */}
+        <div className="h-150"></div> {/* Espacio para la esfera */}
+        <div className="pointer-events-auto">
+          <GaiaMinimal />
+        </div>
       </div>
     </div>
   );
