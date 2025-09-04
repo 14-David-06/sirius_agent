@@ -58,6 +58,41 @@ export default function LogoCarousel({ className = '' }: LogoCarouselProps) {
     return visible;
   };
 
+  // Función para obtener el scaling personalizado por logo
+  const getLogoScale = (logoSrc: string, isCenter: boolean) => {
+    if (!isCenter) return 'scale-100';
+    
+    // Scaling específico para cada logo problemático
+    if (logoSrc === '/Logo Fundación (1).png') {
+      return 'scale-90'; // Reducido aún más para la Fundación
+    }
+    
+    if (logoSrc === '/logo2.png') {
+      return 'scale-100'; // Mantiene el scaling para Del Llano Alto Oleico
+    }
+    
+    return 'scale-125'; // Scaling normal para otros logos
+  };
+
+  // Función para obtener dimensiones específicas por logo
+  const getLogoDimensions = (logoSrc: string, isCenter: boolean) => {
+    const baseWidth = isCenter ? (isMobile ? 320 : 150) : (isMobile ? 290 : 130);
+    const baseHeight = isCenter ? (isMobile ? 320 : 150) : (isMobile ? 290 : 130);
+    
+    // Ajustar altura específicamente para el logo de la Fundación
+    if (logoSrc === '/Logo Fundación (1).png') {
+      return {
+        width: baseWidth - 20,
+        height: Math.round(baseHeight-1000) // Reducir altura en 20%
+      };
+    }
+    
+    return {
+      width: baseWidth,
+      height: baseHeight
+    };
+  };
+
   const visibleLogos = getVisibleLogos();
 
   return (
@@ -71,7 +106,7 @@ export default function LogoCarousel({ className = '' }: LogoCarouselProps) {
             key={`${logo.src}-${currentIndex}-${index}`}
             className={`transition-all duration-500 ease-out ${
               index === 1 // Centro
-                ? 'opacity-100 scale-125 transform' 
+                ? `opacity-100 ${getLogoScale(logo.src, true)} transform` 
                 : 'opacity-85 scale-100' // Lados
             }`}
           >
@@ -89,8 +124,8 @@ export default function LogoCarousel({ className = '' }: LogoCarouselProps) {
                 <Image
                   src={logo.src}
                   alt={logo.alt}
-                  width={index === 1 ? (isMobile ? 320 : 150) : (isMobile ? 290 : 130)}
-                  height={index === 1 ? (isMobile ? 320 : 150) : (isMobile ? 290 : 130)}
+                  width={getLogoDimensions(logo.src, index === 1).width}
+                  height={getLogoDimensions(logo.src, index === 1).height}
                   className="object-contain transition-all duration-300 hover:opacity-80"
                   style={{
                     filter: 'brightness(1) contrast(1)',
