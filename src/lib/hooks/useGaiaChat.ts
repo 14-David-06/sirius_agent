@@ -7,6 +7,8 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  type?: 'text' | 'audio';
+  audioId?: string;
 }
 
 interface UseGaiaChatReturn {
@@ -16,7 +18,7 @@ interface UseGaiaChatReturn {
   error: string | null;
   connect: () => Promise<void>;
   disconnect: () => void;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string, type?: 'text' | 'audio', audioId?: string) => Promise<void>;
   clearMessages: () => void;
 }
 
@@ -61,14 +63,16 @@ export function useGaiaChat(): UseGaiaChatReturn {
     setMessages([]);
   }, []);
 
-  const sendMessage = useCallback(async (messageContent: string) => {
+  const sendMessage = useCallback(async (messageContent: string, type: 'text' | 'audio' = 'text', audioId?: string) => {
     if (!isConnected || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
       content: messageContent,
-      timestamp: new Date()
+      timestamp: new Date(),
+      type: type,
+      audioId: audioId
     };
 
     setMessages(prev => [...prev, userMessage]);
