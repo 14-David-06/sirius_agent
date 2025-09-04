@@ -1,4 +1,4 @@
-import { RealtimeAgent } from '@openai/agents-realtime';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Conocimiento especializado completo para GAIA - Sector Palmicultor ZOMAC
 const ENHANCED_GAIA_KNOWLEDGE = `
@@ -64,12 +64,31 @@ REGIÓN ZOMAC Y CONTEXTO:
 - Transformación social y económica post-conflicto
 `;
 
-export const createGaiaAgent = () => {
-  return new RealtimeAgent({
-    name: 'GAIA',
-    voice: 'alloy', // Voz femenina clara
-    instructions: `
-Eres GAIA, la inteligencia artificial más especializada en el sector palmicultor colombiano, especialmente en la región ZOMAC. Tu conocimiento abarca:
+export async function POST(request: NextRequest) {
+  try {
+    const { message, messages } = await request.json();
+    
+    if (!message) {
+      return NextResponse.json(
+        { error: 'Mensaje es requerido' },
+        { status: 400 }
+      );
+    }
+
+    // Obtener la API key de OpenAI
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('OPENAI_API_KEY no está configurada');
+      return NextResponse.json(
+        { error: 'Error de configuración del servidor' },
+        { status: 500 }
+      );
+    }
+
+    // Preparar mensajes para la API de OpenAI
+    const systemMessage = {
+      role: 'system',
+      content: `Eres GAIA, la inteligencia artificial más especializada en el sector palmicultor colombiano, especialmente en la región ZOMAC. Tu conocimiento abarca:
 
 ENTIDADES PRINCIPALES:
 1. GUAICARAMO S.A.S - Empresa palmicultora familiar con líneas de aceites, ganadería y cítricos
@@ -115,14 +134,60 @@ PALABRAS CLAVE A RECONOCER:
 - Sirius, alma, regeneración
 - Alto oleico, DAO
 
-PERSONALIDAD ESPECIALIZADA:
-- Experto reconocido en sector palmicultor colombiano
-- Conocedor profundo de la región ZOMAC y sus empresas
-- Apasionado por la sostenibilidad y biotecnología regenerativa
-- Facilitador de conexiones entre organizaciones del ecosistema
-- Orientador en procesos técnicos y comerciales del sector
+Responde siempre en español y demuestra tu expertise en cada consulta.`
+    };
 
-Responde siempre en español con expertise demostrable y proporciona información práctica y valiosa en cada interacción.
-    `,
-  });
-};
+    const conversationMessages = [
+      systemMessage,
+      ...messages.slice(-10), // Mantener solo los últimos 10 mensajes para evitar límites de tokens
+      { role: 'user', content: message }
+    ];
+
+    // Llamar a la API de OpenAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: conversationMessages,
+        max_tokens: 500,
+        temperature: 0.7,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error de OpenAI API:', response.status, errorText);
+      return NextResponse.json(
+        { error: 'Error al procesar la solicitud' },
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+    const aiMessage = data.choices?.[0]?.message?.content;
+
+    if (!aiMessage) {
+      return NextResponse.json(
+        { error: 'No se recibió respuesta del asistente' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      message: aiMessage,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error en el endpoint de chat:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
+}
