@@ -447,7 +447,7 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
               
               <div className="flex items-center space-x-2">
                 {/* Menú de opciones */}
-                <div className="relative" ref={menuRef}>
+                <div className="relative z-[60]" ref={menuRef}>
                   <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="p-1.5 hover:bg-slate-700/60 rounded-full transition-colors border border-transparent hover:border-slate-600/50"
@@ -456,8 +456,19 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
                   </button>
                   
                   {showMenu && (
-                    <div className="absolute right-0 top-8 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-10 w-48 backdrop-blur-xl">
-                      <button
+                    <>
+                      {/* Overlay para cerrar el menú */}
+                      <div 
+                        className="fixed inset-0 z-[99]" 
+                        onClick={() => setShowMenu(false)}
+                      />
+                      {/* Menú flotante */}
+                      <div className="fixed bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[100] w-48 backdrop-blur-xl"
+                           style={{
+                             top: '100px',
+                             right: '100px'
+                           }}>
+                        <button
                         onClick={exportConversation}
                         disabled={messages.length === 0}
                         className="w-full flex items-center space-x-2 px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700/60 disabled:opacity-50 first:rounded-t-lg transition-colors"
@@ -473,7 +484,8 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
                         <Trash2 size={14} />
                         <span>Limpiar conversación</span>
                       </button>
-                    </div>
+                      </div>
+                    </>
                   )}
                 </div>
                 
