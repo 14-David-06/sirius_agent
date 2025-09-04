@@ -39,7 +39,7 @@ export default function ThreeAnimation() {
 
   // Colores especificados
   const colors = ['#00B602', '#0154AC', '#00A3FF'];
-  let currentColorIndex = Math.floor(Math.random() * colors.length); // Inicializar con color aleatorio
+  const currentColorIndexRef = useRef(Math.floor(Math.random() * colors.length)); // Usar useRef para persistir el valor
 
   // Fresnel Shader Code
   const fresnelVertexShader = `
@@ -164,7 +164,7 @@ export default function ThreeAnimation() {
 
     // Setup materials
     const material = new THREE.MeshPhongMaterial({
-      color: new THREE.Color(colors[currentColorIndex]), // Usar color aleatorio inicial
+      color: new THREE.Color(colors[currentColorIndexRef.current]), // Usar color aleatorio inicial
       specular: 0xffffff,
       shininess: 100,
       flatShading: false,
@@ -172,7 +172,7 @@ export default function ThreeAnimation() {
 
     const fresnelMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        color: { value: new THREE.Color(colors[currentColorIndex]) }, // Usar color aleatorio inicial
+        color: { value: new THREE.Color(colors[currentColorIndexRef.current]) }, // Usar color aleatorio inicial
         fresnelBias: { value: params.fresnelBias },
         fresnelScale: { value: params.fresnelScale },
         fresnelPower: { value: params.fresnelPower },
@@ -223,7 +223,7 @@ export default function ThreeAnimation() {
     let colorTransition = 0;
     let targetParams = { ...params };
     let isTransitioning = false;
-    let nextColorIndex = (currentColorIndex + 1) % colors.length;
+    let nextColorIndex = (currentColorIndexRef.current + 1) % colors.length;
 
     // Auto-variación sutil cada cierto tiempo
     let lastVariationTime = 0;
@@ -305,13 +305,13 @@ export default function ThreeAnimation() {
       
       if (colorTransition >= 1) {
         colorTransition = 0;
-        currentColorIndex = nextColorIndex;
-        nextColorIndex = (currentColorIndex + 1) % colors.length;
-        console.log('Color changed to:', colors[currentColorIndex], 'isMobile:', isMobile); // Debug
+        currentColorIndexRef.current = nextColorIndex;
+        nextColorIndex = (currentColorIndexRef.current + 1) % colors.length;
+        console.log('Color changed to:', colors[currentColorIndexRef.current], 'isMobile:', isMobile); // Debug
       }
       
       // Transición ultra suave y continua entre colores usando curva sinusoidal suavizada
-      const currentColor = new THREE.Color(colors[currentColorIndex]);
+      const currentColor = new THREE.Color(colors[currentColorIndexRef.current]);
       const nextColor = new THREE.Color(colors[nextColorIndex]);
       
       // Usar una curva más suave con múltiples funciones sinusoidales para transición ultra gradual

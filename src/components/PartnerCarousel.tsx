@@ -17,7 +17,7 @@ export default function LogoCarousel({ className = '' }: LogoCarouselProps) {
     { src: '/logo.png', alt: 'Sirius Regenerative', url: 'https://www.siriusregenerative.co/' },
     { src: '/logo2.png', alt: 'Del Llano Alto Oleico', url: 'https://delllanoaltooleico.com/' },
     { src: '/logo-guaicaramo.png', alt: 'Guaicaramo', url: 'https://guaicaramo.com/' },
-    { src: '/Imagen de WhatsApp 2025-09-03 a las 20.57.58_513fcba5.jpg', alt: 'FundacionGuaicaramo', url: 'https://funguaicaramo.org/' }
+    { src: '/Logo Fundación (1).png', alt: 'FundacionGuaicaramo', url: 'https://funguaicaramo.org/' }
   ];
 
   // Detectar si es móvil

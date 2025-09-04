@@ -139,7 +139,7 @@ export default function GaiaRealtime({ className = '', onClose }: GaiaRealtimePr
           <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="text-blue-800 font-medium text-sm mb-2">Cómo usar GAIA:</h4>
             <ol className="text-blue-700 text-xs space-y-1 list-decimal list-inside">
-              <li>Haz clic en "Conectar GAIA"</li>
+              <li>Haz clic en &quot;Conectar GAIA&quot;</li>
               <li>Permite el acceso al micrófono</li>
               <li>¡Comienza a hablar! GAIA responderá automáticamente</li>
             </ol>

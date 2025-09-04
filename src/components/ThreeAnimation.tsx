@@ -26,7 +26,7 @@ export default function ThreeAnimation() {
 
   // Colores especificados
   const colors = ['#00B602', '#0154AC', '#00A3FF'];
-  let currentColorIndex = 0;
+  const currentColorIndexRef = useRef(0);
 
   // Fresnel Shader Code
   const fresnelVertexShader = `
@@ -223,11 +223,11 @@ export default function ThreeAnimation() {
       colorTransition += params.colorChangeSpeed;
       if (colorTransition >= 1) {
         colorTransition = 0;
-        currentColorIndex = (currentColorIndex + 1) % colors.length;
+        currentColorIndexRef.current = (currentColorIndexRef.current + 1) % colors.length;
       }
 
-      const currentColor = new THREE.Color(colors[currentColorIndex]);
-      const nextColor = new THREE.Color(colors[(currentColorIndex + 1) % colors.length]);
+      const currentColor = new THREE.Color(colors[currentColorIndexRef.current]);
+      const nextColor = new THREE.Color(colors[(currentColorIndexRef.current + 1) % colors.length]);
       const interpolatedColor = currentColor.lerp(nextColor, colorTransition);
 
       if (params.useFresnel) {
