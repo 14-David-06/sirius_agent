@@ -14,7 +14,7 @@ interface UseGaiaReturn {
   isConnecting: boolean;
   error: string | null;
   connect: () => Promise<void>;
-  disconnect: () => Promise<void>;
+  disconnect: () => void;
   clearError: () => void;
 }
 
@@ -27,11 +27,41 @@ export function useGaia(options: UseGaiaOptions = {}): UseGaiaReturn {
   
   const sessionRef = useRef<RealtimeSession | null>(null);
 
-  // Limpiar sesión al desmontar
+  // Limpiar sesión al desmontar o cambiar de página
   useEffect(() => {
-    return () => {
+    const handleBeforeUnload = () => {
       if (sessionRef.current) {
-        sessionRef.current = null;
+        try {
+          if (typeof sessionRef.current.close === 'function') {
+            sessionRef.current.close();
+          }
+          sessionRef.current = null;
+        } catch (err) {
+          console.error('[GAIA] Error en limpieza before unload:', err);
+        }
+      }
+    };
+
+    // Agregar listener para limpieza cuando se cierre la ventana
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      // Remover listener
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      
+      // Limpieza al desmontar
+      if (sessionRef.current) {
+        try {
+          if (typeof sessionRef.current.close === 'function') {
+            sessionRef.current.close();
+          }
+          
+          console.log('[GAIA] Limpieza automática de sesión');
+        } catch (err) {
+          console.error('[GAIA] Error en limpieza:', err);
+        } finally {
+          sessionRef.current = null;
+        }
       }
     };
   }, []);
@@ -67,6 +97,18 @@ export function useGaia(options: UseGaiaOptions = {}): UseGaiaReturn {
   const connect = useCallback(async () => {
     if (isConnecting || isConnected) return;
 
+    // Asegurar limpieza de sesión anterior
+    if (sessionRef.current) {
+      try {
+        if (typeof sessionRef.current.close === 'function') {
+          sessionRef.current.close();
+        }
+        sessionRef.current = null;
+      } catch (err) {
+        console.warn('[GAIA] Error limpiando sesión anterior:', err);
+      }
+    }
+
     setIsConnecting(true);
     setError(null);
     logMessage('Conectando a GAIA...');
@@ -92,17 +134,48 @@ export function useGaia(options: UseGaiaOptions = {}): UseGaiaReturn {
       
     } catch (err) {
       handleError(err);
-      sessionRef.current = null;
+      if (sessionRef.current) {
+        try {
+          if (typeof sessionRef.current.close === 'function') {
+            sessionRef.current.close();
+          }
+        } catch (closeErr) {
+          console.warn('[GAIA] Error cerrando sesión fallida:', closeErr);
+        } finally {
+          sessionRef.current = null;
+        }
+      }
     } finally {
       setIsConnecting(false);
     }
   }, [isConnecting, isConnected, generateClientToken, handleError, logMessage]);
 
-  const disconnect = useCallback(async () => {
+  const disconnect = useCallback(() => {
     if (sessionRef.current) {
-      sessionRef.current = null;
-      setIsConnected(false);
-      logMessage('🔌 GAIA desconectado');
+      try {
+        logMessage('🔌 Desconectando GAIA...');
+        
+        // Intentar cerrar la conexión de forma segura
+        // Forzar limpieza inmediata de la referencia para detener cualquier actividad
+        const currentSession = sessionRef.current;
+        sessionRef.current = null;
+        
+        // Intentar cerrar si el método existe
+        if (typeof currentSession.close === 'function') {
+          currentSession.close();
+        }
+        
+        setIsConnected(false);
+        logMessage('✅ GAIA desconectado correctamente');
+        
+      } catch (err) {
+        logMessage('⚠️ Error al desconectar, limpieza forzada');
+        console.error('Error disconnecting:', err);
+        
+        // Forzar limpieza aunque haya error
+        sessionRef.current = null;
+        setIsConnected(false);
+      }
     }
   }, [logMessage]);
 
