@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGaia } from '@/lib/hooks/useGaia';
 import { useGaiaChat } from '@/lib/hooks/useGaiaChat';
-import { Phone, PhoneCall, Loader2, MessageCircle, Send, X, Mic, MicOff, Download, Trash2, MoreVertical, Play, Pause } from 'lucide-react';
+import { Phone, PhoneCall, Loader2, MessageCircle, Send, X, Mic, MicOff, ArrowUp, Trash2, Play, Pause } from 'lucide-react';
 import AudioMessage from './AudioMessage';
 
 interface GaiaMinimalProps {
@@ -16,13 +16,11 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [audioMessages, setAudioMessages] = useState<{[key: string]: {blob: Blob, url: string, duration: number}}>({});
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   
   const {
     isConnected,
@@ -51,17 +49,6 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Cerrar menú al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Función para transcribir audio
   const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
@@ -252,29 +239,50 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
   };
 
   // Exportar conversación
-  const exportConversation = () => {
-    const conversationText = messages.map(msg => {
-      const time = msg.timestamp.toLocaleString('es-ES');
-      const sender = msg.role === 'user' ? 'Usuario' : 'GAIA';
-      return `[${time}] ${sender}: ${msg.content}`;
-    }).join('\n\n');
+  const handleExportConversation = () => {
+    console.log('Export clicked, messages count:', messages?.length || 0);
+    
+    try {
+      if (!messages || messages.length === 0) {
+        console.log('No hay mensajes para exportar');
+        return;
+      }
+      
+      const conversationText = messages.map(msg => {
+        const time = msg.timestamp ? msg.timestamp.toLocaleString('es-ES') : new Date().toLocaleString('es-ES');
+        const sender = msg.role === 'user' ? 'Usuario' : 'GAIA';
+        return `[${time}] ${sender}: ${msg.content}`;
+      }).join('\n\n');
 
-    const blob = new Blob([conversationText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `conversacion-gaia-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setShowMenu(false);
+      const blob = new Blob([conversationText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `conversacion-gaia-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      console.log('Conversación exportada exitosamente');
+    } catch (error) {
+      console.error('Error al exportar conversación:', error);
+    }
   };
 
   // Limpiar conversación
   const handleClearConversation = () => {
-    clearMessages();
-    setShowMenu(false);
+    console.log('Clear clicked');
+    
+    try {
+      if (clearMessages && typeof clearMessages === 'function') {
+        clearMessages();
+        console.log('Conversación limpiada');
+      } else {
+        console.error('clearMessages no está disponible');
+      }
+    } catch (error) {
+      console.error('Error al limpiar conversación:', error);
+    }
   };
 
   return (
@@ -446,52 +454,31 @@ export default function GaiaMinimal({ isChatActive, onVoiceToggle, onChatToggle 
               </div>
               
               <div className="flex items-center space-x-2">
-                {/* Menú de opciones */}
-                <div className="relative z-[60]" ref={menuRef}>
-                  <button
-                    onClick={() => setShowMenu(!showMenu)}
-                    className="p-1.5 hover:bg-slate-700/60 rounded-full transition-colors border border-transparent hover:border-slate-600/50"
-                  >
-                    <MoreVertical size={16} className="text-slate-300" />
-                  </button>
-                  
-                  {showMenu && (
-                    <>
-                      {/* Overlay para cerrar el menú */}
-                      <div 
-                        className="fixed inset-0 z-[99]" 
-                        onClick={() => setShowMenu(false)}
-                      />
-                      {/* Menú flotante */}
-                      <div className="fixed bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[100] w-48 backdrop-blur-xl"
-                           style={{
-                             top: '100px',
-                             right: '100px'
-                           }}>
-                        <button
-                        onClick={exportConversation}
-                        disabled={messages.length === 0}
-                        className="w-full flex items-center space-x-2 px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700/60 disabled:opacity-50 first:rounded-t-lg transition-colors"
-                      >
-                        <Download size={14} className="text-blue-400" />
-                        <span>Exportar conversación</span>
-                      </button>
-                      <button
-                        onClick={handleClearConversation}
-                        disabled={messages.length === 0}
-                        className="w-full flex items-center space-x-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-900/20 disabled:opacity-50 last:rounded-b-lg transition-colors border-t border-slate-700/50"
-                      >
-                        <Trash2 size={14} />
-                        <span>Limpiar conversación</span>
-                      </button>
-                      </div>
-                    </>
-                  )}
-                </div>
+                {/* Botón Exportar */}
+                <button
+                  onClick={handleExportConversation}
+                  disabled={!messages || messages.length === 0}
+                  className="p-1.5 hover:bg-slate-700/60 rounded-full transition-colors border border-transparent hover:border-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Exportar conversación"
+                >
+                  <ArrowUp size={16} className="text-blue-400" />
+                </button>
                 
+                {/* Botón Limpiar */}
+                <button
+                  onClick={handleClearConversation}
+                  disabled={!messages || messages.length === 0}
+                  className="p-1.5 hover:bg-slate-700/60 rounded-full transition-colors border border-transparent hover:border-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Limpiar conversación"
+                >
+                  <Trash2 size={16} className="text-red-400" />
+                </button>
+                
+                {/* Botón Cerrar */}
                 <button
                   onClick={handleChatToggle}
                   className="p-1.5 hover:bg-slate-700/60 rounded-full transition-colors border border-transparent hover:border-slate-600/50"
+                  title="Cerrar chat"
                 >
                   <X size={16} className="text-slate-300" />
                 </button>
